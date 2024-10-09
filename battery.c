@@ -59,3 +59,4 @@ int batteryIsOk(float temperature, float soc, float chargeRate) {
     // Return true if all parameters are within valid range
     return isTempOk && isSocOk && isChargeRateOk;
 }
+
