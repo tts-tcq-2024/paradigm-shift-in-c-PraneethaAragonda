@@ -1,6 +1,8 @@
 #ifndef BATTERY_H
 #define BATTERY_H
 
+#include <stdio.h>  // Add this line to ensure printf is recognized
+
 // Define structure for parameter limits and warning configuration
 typedef struct {
     float lowerLimit;
