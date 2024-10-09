@@ -13,26 +13,29 @@ int checkRange(float value, ParameterLimits limits, const char* paramName, const
     return 1;
 }
 
+// Helper function to print a warning
+void printWarning(const char* message, float value, const char* paramName, const char* unit) {
+    printf("Warning: %s approaching %s threshold! %.2f %s\n", paramName, message, value, unit);
+}
+
 // Refactored checkWarning function to reduce CCN
 void checkWarning(float value, ParameterLimits limits, const char* paramName, const char* unit) {
     if (!limits.enableWarning) {
         return;  // Warning disabled for this parameter
     }
 
+    // Calculate the warning thresholds
     float warningLower = limits.lowerLimit + limits.warningTolerance;
     float warningUpper = limits.upperLimit - limits.warningTolerance;
 
-    // Use a single function to handle warnings both for low and high thresholds
-    void printWarning(const char* message, float value) {
-        printf("Warning: %s approaching %s threshold! %.2f %s\n", paramName, message, value, unit);
-    }
-
+    // Check for low warning condition
     if (value >= limits.lowerLimit && value <= warningLower) {
-        printWarning("low", value);
+        printWarning("low", value, paramName, unit);
     }
 
+    // Check for high warning condition
     if (value >= warningUpper && value <= limits.upperLimit) {
-        printWarning("high", value);
+        printWarning("high", value, paramName, unit);
     }
 }
 
