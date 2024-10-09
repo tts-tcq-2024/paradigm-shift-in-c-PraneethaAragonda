@@ -1,3 +1,4 @@
+#include <stdio.h> // Include this for printf
 #include <assert.h>
 #include "battery.h"
 
