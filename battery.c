@@ -18,7 +18,7 @@ void printWarning(const char* message, float value, const char* paramName, const
     printf("Warning: %s approaching %s threshold! %.2f %s\n", paramName, message, value, unit);
 }
 
-// Refactored checkWarning function to reduce CCN
+// Function to check warning conditions with reduced complexity
 void checkWarning(float value, ParameterLimits limits, const char* paramName, const char* unit) {
     if (!limits.enableWarning) {
         return;  // Warning disabled for this parameter
@@ -40,23 +40,51 @@ void checkWarning(float value, ParameterLimits limits, const char* paramName, co
 }
 
 // Main function to check if battery is OK
-int batteryIsOk(float temperature, float soc, float chargeRate) {
+int batteryIsOk(float temperature, float soc, float chargeRate, 
+                int checkTemp, int checkSoc, int checkChargeRate) {
     // Centralized configuration for each parameter
     ParameterLimits tempLimits = {0, 45, 2.25, 1};    // Warnings enabled for temperature
     ParameterLimits socLimits = {20, 80, 4, 1};       // Warnings enabled for SoC
     ParameterLimits chargeLimits = {0, 0.8, 0.04, 1}; // Warnings enabled for charge rate
 
-    // Range checks
-    int isTempOk = checkRange(temperature, tempLimits, "Temperature", "°C");
-    int isSocOk = checkRange(soc, socLimits, "State of Charge", "%");
-    int isChargeRateOk = checkRange(chargeRate, chargeLimits, "Charge Rate", "C");
+    // Initialize status to true
+    int status = 1;
 
-    // Warning checks only if warnings are enabled for each parameter
-    checkWarning(temperature, tempLimits, "Temperature", "°C");
-    checkWarning(soc, socLimits, "State of Charge", "%");
-    checkWarning(chargeRate, chargeLimits, "Charge Rate", "C");
+    // Range checks based on which parameters to check
+    if (checkTemp) {
+        int isTempOk = checkRange(temperature, tempLimits, "Temperature", "°C");
+        checkWarning(temperature, tempLimits, "Temperature", "°C");
+        status &= isTempOk;  // Combine the result with status
+    }
 
-    // Return true if all parameters are within valid range
-    return isTempOk && isSocOk && isChargeRateOk;
+    if (checkSoc) {
+        int isSocOk = checkRange(soc, socLimits, "State of Charge", "%");
+        checkWarning(soc, socLimits, "State of Charge", "%");
+        status &= isSocOk;  // Combine the result with status
+    }
+
+    if (checkChargeRate) {
+        int isChargeRateOk = checkRange(chargeRate, chargeLimits, "Charge Rate", "C");
+        checkWarning(chargeRate, chargeLimits, "Charge Rate", "C");
+        status &= isChargeRateOk;  // Combine the result with status
+    }
+
+    // Return true (1) if all checked parameters are within range, false (0) otherwise
+    return status;
 }
 
+int main() {
+    // Test case 1: Checking all parameters
+    int result1 = batteryIsOk(30, 50, 0.6, 1, 1, 1);
+    printf("Battery check result (all parameters): %d\n", result1);
+
+    // Test case 2: Only checking SoC
+    int result2 = batteryIsOk(30, 90, 0.6, 0, 1, 0);  // Only checking SoC
+    printf("Battery check result (only SoC): %d\n", result2);
+
+    // Test case 3: Checking Temperature and Charge Rate
+    int result3 = batteryIsOk(50, 50, 0.9, 1, 0, 1);  // Only checking Temperature and Charge Rate
+    printf("Battery check result (Temp and Charge Rate): %d\n", result3);
+
+    return 0;
+}
